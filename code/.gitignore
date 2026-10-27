@@ -1,0 +1,23 @@
+# Ignore all exe files
+*.exe
+
+# Ignore all log files
+*.log
+
+*.ilk
+*.pdb
+
+# Ignore all object files
+*.obj
+
+# Ignore all sln files
+*.sln
+
+# Ignore all png files
+# *.png
+
+# Ignore the web build directory
+/dist
+
+# Ignore all zip files
+*.zip
