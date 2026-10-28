@@ -2,7 +2,7 @@
 
 :: NOTE: For the ctime timings make sure to change the name
 :: of the file here and at the end of the script as well
-ctime -begin jam.ctm
+::ctime -begin jam.ctm
 
 set CompilerFlags= /Zi /MDd /FC /nologo
 REM set LinkerFlags=-subsystem:Console
@@ -12,17 +12,17 @@ IF NOT EXIST ..\build mkdir ..\build
 pushd ..\build
 
 cl %CompilerFlags% /c /D PLATFORM_DESKTOP /I..\external\Raylib\external\glfw\include ^
-    ..\external\Raylib\rcore.c ^
-    ..\external\Raylib\rmodels.c ^
-    ..\external\Raylib\raudio.c ^
-    ..\external\Raylib\rglfw.c ^
-    ..\external\Raylib\rshapes.c ^
-    ..\external\Raylib\rtext.c ^
-    ..\external\Raylib\rtextures.c
+    ..\external\raylib\rcore.c ^
+    ..\external\raylib\rmodels.c ^
+    ..\external\raylib\raudio.c ^
+    ..\external\raylib\rglfw.c ^
+    ..\external\raylib\rshapes.c ^
+    ..\external\raylib\rtext.c ^
+    ..\external\raylib\rtextures.c
 
 :: NOTE: Make sure to name both the .cpp and .exe files appropriately
 cl %CompilerFlags% ^
-    ..\jam.cpp ^
+    ..\code\jam.cpp ^
     rcore.obj ^
     rmodels.obj ^
     raudio.obj ^
@@ -38,4 +38,4 @@ cl %CompilerFlags% ^
 
 popd
 
-ctime -end jam.ctm
+::ctime -end jam.ctm
