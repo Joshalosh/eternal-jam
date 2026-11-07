@@ -16,14 +16,20 @@ int main() {
     int screen_width  = 640;
     int screen_height = 360;
 
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "Eternal Jam");
 
     SetTargetFPS(60);
 
 
     while(!WindowShouldClose()) {
+        if (IsWindowResized()) {
+            screen_width = GetScreenWidth();
+            screen_height = GetScreenHeight();
+        }
         Rectangle border = {0.0f, 0.0f, (float)screen_width, (float)screen_height};
         float thickness = 50.0f;
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
