@@ -23,7 +23,7 @@ int main() {
 
     while(!WindowShouldClose()) {
         Rectangle border = {0.0f, 0.0f, (float)screen_width, (float)screen_height};
-        float thickness = 100.0f;
+        float thickness = 50.0f;
         BeginDrawing();
         ClearBackground(RAYWHITE);
 

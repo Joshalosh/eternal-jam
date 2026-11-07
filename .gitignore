@@ -19,7 +19,7 @@
 # Ignore the web build directory
 /dist
 
-# Ignore build directory
+# Ignore the build directory
 /build
 
 # Ignore all zip files
