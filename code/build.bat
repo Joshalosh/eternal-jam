@@ -7,9 +7,9 @@
 set CompilerFlags= /Zi /MDd /FC /nologo
 REM set LinkerFlags=-subsystem:Console
 
-IF NOT EXIST ..\build mkdir ..\build
+IF NOT EXIST build mkdir build
 
-pushd ..\build
+pushd build
 
 cl %CompilerFlags% /c /D PLATFORM_DESKTOP /I..\external\Raylib\external\glfw\include ^
     ..\external\raylib\rcore.c ^
