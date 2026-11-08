@@ -8,6 +8,8 @@
 struct Window {
     int screen_width;
     int screen_height;
+    int render_width;
+    int render_height;
 };
 
 struct Game_State {
@@ -16,18 +18,28 @@ struct Game_State {
 
 GLOBAL Game_State g_game_state;
 
-INTERNAL SetWindowDimensions(int *width, int *height) {
+INTERNAL void SetWindowDimensions(int *width, int *height) {
     *width  = GetScreenWidth();
     *height = GetScreenHeight();
 }
 
+INTERNAL void AspectRatioToFit(Game_State *game_state) {
+    int screen_width = game_state->window.screen_width;
+    int screen_height = game_state->window.screen_height;
+
+    game_state->window.render_width  = (int)(screen_width  * (screen_width / screen_height));
+    game_state->window.render_height = (int)(screen_height * (screen_width / screen_height));
+}
+
 INTERNAL void GameStateInit(Game_State *game_state) {
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
+    AspectRatioToFit(game_state);
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
     if (IsWindowResized()) {
         SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
+        AspectRatioToFit(game_state);
     }
 }
 
@@ -35,13 +47,14 @@ INTERNAL void GameRender(Game_State *game_state) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-    Rectangle border = {0.0f, 0.0f, (float)game_state->window.screen_width, 
-                                    (float)game_state->window.screen_height};
+    Rectangle border = {0.0f, 0.0f, (float)game_state->window.render_width, 
+                                    (float)game_state->window.render_height};
     float thickness = 50.0f;
     DrawRectangleLinesEx(border, thickness, BROWN);
 
     EndDrawing();
 }
+
 
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
