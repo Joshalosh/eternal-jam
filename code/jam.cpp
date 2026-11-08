@@ -1,45 +1,58 @@
 
 #include "raylib.h"
 
-int NullTerminatedTextLength(char *text) {
-    // TODO: Assert the initial pointer is not null.
+#define GLOBAL        static
+#define INTERNAL      static
+#define LOCAL_PERSIST static
 
-    char *scan = text;
-    while(*scan) {
-        scan++;
+struct Window {
+    int screen_width;
+    int screen_height;
+};
+
+struct Game_State {
+    Window window;
+};
+
+GLOBAL Game_State g_game_state;
+
+INTERNAL SetWindowDimensions(int *width, int *height) {
+    *width  = GetScreenWidth();
+    *height = GetScreenHeight();
+}
+
+INTERNAL void GameStateInit(Game_State *game_state) {
+    SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
+}
+
+INTERNAL void GameUpdate(Game_State *game_state) {
+    if (IsWindowResized()) {
+        SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
     }
-    int result = (int)(scan - text);
-    return result;
+}
+
+INTERNAL void GameRender(Game_State *game_state) {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+
+    Rectangle border = {0.0f, 0.0f, (float)game_state->window.screen_width, 
+                                    (float)game_state->window.screen_height};
+    float thickness = 50.0f;
+    DrawRectangleLinesEx(border, thickness, BROWN);
+
+    EndDrawing();
 }
 
 int main() {
-    int screen_width  = 640;
-    int screen_height = 360;
-
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screen_width, screen_height, "Eternal Jam");
-
+    InitWindow(640, 360, "Eternal Jam");
     SetTargetFPS(60);
 
+    GameStateInit(&g_game_state);
 
     while(!WindowShouldClose()) {
-        if (IsWindowResized()) {
-            screen_width = GetScreenWidth();
-            screen_height = GetScreenHeight();
-        }
-        Rectangle border = {0.0f, 0.0f, (float)screen_width, (float)screen_height};
-        float thickness = 50.0f;
-
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        DrawRectangleLinesEx(border, thickness, BROWN);
-
-        char *text = "Brand New Window";
-        int text_size = NullTerminatedTextLength(text);
-        int draw_point = screen_width*0.5 - text_size*0.5;
-        DrawText(text, draw_point, screen_height*0.5, 20, LIGHTGRAY);
-        EndDrawing();
+        GameUpdate(&g_game_state);
+        GameRender(&g_game_state);
     }
 
     CloseWindow();
