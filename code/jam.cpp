@@ -5,6 +5,11 @@
 #define INTERNAL      static
 #define LOCAL_PERSIST static
 
+#define MIN(A, B) ((A) < (B) ? (A) : (B))
+
+#define TARGET_WIDTH  640
+#define TARGET_HEIGHT 340
+
 struct Window {
     int screen_width;
     int screen_height;
@@ -24,16 +29,19 @@ INTERNAL void SetWindowDimensions(int *width, int *height) {
 }
 
 INTERNAL void AspectRatioToFit(Game_State *game_state) {
-    int screen_width = game_state->window.screen_width;
-    int screen_height = game_state->window.screen_height;
+    Window *window = &game_state->window;
+    float scale_width  = window->screen_height * ((float)TARGET_WIDTH  / (float)TARGET_HEIGHT);
+    float scale_height = window->screen_width  * ((float)TARGET_HEIGHT / (float)TARGET_WIDTH);
 
-    game_state->window.render_width  = (int)(screen_width  * (screen_width / screen_height));
-    game_state->window.render_height = (int)(screen_height * (screen_width / screen_height));
+
+    window->render_width = (int)(scale_width);
+    window->render_height = (int)(scale_height);
 }
 
 INTERNAL void GameStateInit(Game_State *game_state) {
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
-    AspectRatioToFit(game_state);
+    game_state->window.render_width = game_state->window.screen_width;
+    game_state->window.render_height = game_state->window.screen_height;
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
