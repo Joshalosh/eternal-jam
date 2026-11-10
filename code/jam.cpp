@@ -13,12 +13,11 @@
 struct Window {
     int screen_width;
     int screen_height;
-    int render_width;
-    int render_height;
 };
 
 struct Game_State {
     Window window;
+    Rectangle border;
 };
 
 GLOBAL Game_State g_game_state;
@@ -30,18 +29,29 @@ INTERNAL void SetWindowDimensions(int *width, int *height) {
 
 INTERNAL void AspectRatioToFit(Game_State *game_state) {
     Window *window = &game_state->window;
-    float scale_width  = window->screen_height * ((float)TARGET_WIDTH  / (float)TARGET_HEIGHT);
-    float scale_height = window->screen_width  * ((float)TARGET_HEIGHT / (float)TARGET_WIDTH);
+    Rectangle *result = &game_state->border;  
+    int optimal_width = (int)(window->screen_height * ((float)TARGET_WIDTH / (float)TARGET_HEIGHT)); 
+    int optimal_height = (int)(window->screen_width *((float)TARGET_HEIGHT / (float)TARGET_WIDTH));
 
-
-    window->render_width = (int)(scale_width);
-    window->render_height = (int)(scale_height);
+    if (optimal_width > window->screen_width) {
+        result->width  = window->screen_width;
+        result->height = optimal_height;
+        result->x = 0;
+        int empty_height = window->screen_height - optimal_height;
+        result->y = empty_height*0.5f;
+    } else {
+        result->width  = optimal_width;
+        result->height = window->screen_height;
+        int empty_width = window->screen_width - optimal_width;
+        result->x = empty_width*0.5f;
+        result->y = 0;
+    }
 }
 
 INTERNAL void GameStateInit(Game_State *game_state) {
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
-    game_state->window.render_width = game_state->window.screen_width;
-    game_state->window.render_height = game_state->window.screen_height;
+    game_state->border.width  = game_state->window.screen_width;
+    game_state->border.height = game_state->window.screen_height;
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
@@ -53,12 +63,10 @@ INTERNAL void GameUpdate(Game_State *game_state) {
 
 INTERNAL void GameRender(Game_State *game_state) {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(BLACK);
 
-    Rectangle border = {0.0f, 0.0f, (float)game_state->window.render_width, 
-                                    (float)game_state->window.render_height};
     float thickness = 50.0f;
-    DrawRectangleLinesEx(border, thickness, BROWN);
+    DrawRectangleLinesEx(game_state->border, thickness, BROWN);
 
     EndDrawing();
 }
