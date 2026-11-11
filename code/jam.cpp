@@ -17,6 +17,7 @@ struct Window {
 
 struct Game_State {
     Window window;
+    RenderTexture2D canvas;
     Rectangle border;
 };
 
