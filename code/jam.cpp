@@ -1,18 +1,13 @@
 
 #include "raylib.h"
-
-#define GLOBAL        static
-#define INTERNAL      static
-#define LOCAL_PERSIST static
-
-#define MIN(A, B) ((A) < (B) ? (A) : (B))
+#include "staples.h"
 
 #define CANVAS_WIDTH  640
 #define CANVAS_HEIGHT 360
 
 struct Window {
-    int screen_width;
-    int screen_height;
+    S32 screen_width;
+    S32 screen_height;
 };
 
 struct Game_State {
@@ -22,12 +17,13 @@ struct Game_State {
 
 GLOBAL Game_State g_game_state;
 
-INTERNAL void SetWindowDimensions(int *width, int *height) {
+INTERNAL void SetWindowDimensions(S32 *width, S32 *height) {
     *width  = GetScreenWidth();
     *height = GetScreenHeight();
 }
 
-INTERNAL Rectangle MaximumSizeAspectRatioRectangle(int canvas_width, int canvas_height, int window_width, int window_height) {
+INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_height, 
+                                              S32 window_width, S32 window_height) {
     Rectangle result {};
 
     if ((canvas_width  > 0) &&
@@ -35,19 +31,19 @@ INTERNAL Rectangle MaximumSizeAspectRatioRectangle(int canvas_width, int canvas_
         (window_width  > 0) &&
         (window_height > 0)) {
 
-        float optimal_width   = ((float)window_height * ((float)CANVAS_WIDTH / (float)CANVAS_HEIGHT)); 
-        float optimal_height  = ((float)window_width * ((float)CANVAS_HEIGHT / (float)CANVAS_WIDTH));
+        R32 optimal_width   = ((R32)window_height * ((R32)canvas_width / (R32)canvas_height)); 
+        R32 optimal_height  = ((R32)window_width  * ((R32)canvas_height / (R32)canvas_width));
 
-        if (optimal_width > window_width) {
-            result.width  = window_width;
+        if (optimal_width > (R32)window_width) {
+            result.width  = (R32)window_width;
             result.height = optimal_height;
             result.x = 0;
-            float empty_height = window_height - optimal_height;
+            R32 empty_height = (R32)window_height - optimal_height;
             result.y = empty_height*0.5f;
         } else {
-            result.width  = optimal_width;
-            result.height = window_height;
-            float empty_width = window_width - optimal_width;
+            result.width  = (R32)optimal_width;
+            result.height = (R32)window_height;
+            R32 empty_width = (R32)window_width - optimal_width;
             result.x = empty_width*0.5f;
             result.y = 0;
         }
@@ -73,7 +69,7 @@ INTERNAL void GameRender(Game_State *game_state) {
     BeginTextureMode(game_state->canvas);
     ClearBackground(RAYWHITE);
 
-    float thickness = 50.0f;
+    R32 thickness = 50.0f;
     Rectangle border = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
     EndTextureMode();
@@ -81,10 +77,10 @@ INTERNAL void GameRender(Game_State *game_state) {
 
     BeginDrawing();
     ClearBackground(BLACK);
-    Rectangle source_rect = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
-    Rectangle dest_rect   = MaximumSizeAspectRatioRectangle(CANVAS_WIDTH, CANVAS_HEIGHT, 
-                                                            game_state->window.screen_width, 
-                                                            game_state->window.screen_height);
+    Rectangle source_rect = {0, 0, (R32)CANVAS_WIDTH, -(R32)CANVAS_HEIGHT};
+    Rectangle dest_rect   = AspectRatioFittedRectangle(CANVAS_WIDTH, CANVAS_HEIGHT, 
+                                                       game_state->window.screen_width, 
+                                                       game_state->window.screen_height);
     DrawTexturePro(game_state->canvas.texture, source_rect, dest_rect, Vector2{0, 0}, 0, WHITE);
 
     EndDrawing();

@@ -2,7 +2,7 @@
 
 :: NOTE: For the ctime timings make sure to change the name
 :: of the file here and at the end of the script as well
-::ctime -begin jam.ctm
+ctime -begin jam.ctm
 
 set CompilerFlags= /Zi /MDd /FC /nologo
 REM set LinkerFlags=-subsystem:Console
@@ -38,4 +38,4 @@ cl %CompilerFlags% ^
 
 popd
 
-::ctime -end jam.ctm
+ctime -end jam.ctm
