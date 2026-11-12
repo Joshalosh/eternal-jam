@@ -8,7 +8,7 @@
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 
 #define CANVAS_WIDTH  640
-#define CANVAS_HEIGHT 340
+#define CANVAS_HEIGHT 360
 
 struct Window {
     int screen_width;
@@ -28,23 +28,31 @@ INTERNAL void SetWindowDimensions(int *width, int *height) {
 }
 
 INTERNAL Rectangle MaximumSizeAspectRatioRectangle(int canvas_width, int canvas_height, int window_width, int window_height) {
-    Rectangle result;
-    float optimal_width  = ((float)window_height * ((float)CANVAS_WIDTH / (float)CANVAS_HEIGHT)); 
-    float optimal_height  = ((float)window_width * ((float)CANVAS_HEIGHT / (float)CANVAS_WIDTH));
+    Rectangle result {};
 
-    if (optimal_width > window_width) {
-        result.width  = window_width;
-        result.height = optimal_height;
-        result.x = 0;
-        int empty_height = window_height - optimal_height;
-        result.y = empty_height*0.5f;
-    } else {
-        result.width  = optimal_width;
-        result.height = window_height;
-        int empty_width = window_width - optimal_width;
-        result.x = empty_width*0.5f;
-        result.y = 0;
+    if ((canvas_width  > 0) &&
+        (canvas_height > 0) &&
+        (window_width  > 0) &&
+        (window_height > 0)) {
+
+        float optimal_width   = ((float)window_height * ((float)CANVAS_WIDTH / (float)CANVAS_HEIGHT)); 
+        float optimal_height  = ((float)window_width * ((float)CANVAS_HEIGHT / (float)CANVAS_WIDTH));
+
+        if (optimal_width > window_width) {
+            result.width  = window_width;
+            result.height = optimal_height;
+            result.x = 0;
+            float empty_height = window_height - optimal_height;
+            result.y = empty_height*0.5f;
+        } else {
+            result.width  = optimal_width;
+            result.height = window_height;
+            float empty_width = window_width - optimal_width;
+            result.x = empty_width*0.5f;
+            result.y = 0;
+        }
     }
+
     return result;
 }
 
@@ -85,7 +93,7 @@ INTERNAL void GameRender(Game_State *game_state) {
 
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(640, 360, "Eternal Jam");
+    InitWindow(CANVAS_WIDTH, CANVAS_HEIGHT, "Eternal Jam");
     SetTargetFPS(60);
 
     GameStateInit(&g_game_state);
