@@ -13,6 +13,7 @@ struct Window {
 struct Game_State {
     Window window;
     RenderTexture2D canvas;
+    Texture2D com;
 };
 
 GLOBAL Game_State g_game_state;
@@ -57,6 +58,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
 
     game_state->canvas = LoadRenderTexture(CANVAS_WIDTH, CANVAS_HEIGHT);
     SetTextureFilter(game_state->canvas.texture, TEXTURE_FILTER_POINT);
+    game_state->com = LoadTexture("assets/sprites/com_1.png");
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
@@ -66,15 +68,22 @@ INTERNAL void GameUpdate(Game_State *game_state) {
 }
 
 INTERNAL void GameRender(Game_State *game_state) {
+    // Draw to texture
     BeginTextureMode(game_state->canvas);
-    ClearBackground(RAYWHITE);
+    if (IsTextureValid(game_state->com)) {
+        ClearBackground(RAYWHITE);
+    } else {
+        ClearBackground(RED);
+    } 
 
     R32 thickness = 50.0f;
     Rectangle border = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
+    DrawTexture(game_state->com, CANVAS_WIDTH*0.5f, CANVAS_HEIGHT*0.5f, WHITE);
     EndTextureMode();
 
 
+    // Draw texture to screen
     BeginDrawing();
     ClearBackground(BLACK);
     Rectangle source_rect = {0, 0, (R32)CANVAS_WIDTH, -(R32)CANVAS_HEIGHT};
