@@ -35,7 +35,7 @@ typedef double   R64;
 #endif
 
 INTERNAL U32 SafeU64ToU32(U64 input) {
-    ASSERT(input <= 0xFFFFFFFF)
+    ASSERT(input <= 0xFFFFFFFF);
     U32 result = (U32)input;
     return result;
 }

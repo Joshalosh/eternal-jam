@@ -4,14 +4,16 @@
 :: of the file here and at the end of the script as well
 ctime -begin jam.ctm
 
-set CompilerFlags= /Zi /MDd /FC /nologo
+set CompilerFlags= /Od /Zi /MDd /FC /nologo /D DEBUG
 REM set LinkerFlags=-subsystem:Console
 
 IF NOT EXIST build mkdir build
 
 pushd build
 
-cl %CompilerFlags% /c /D PLATFORM_DESKTOP /I..\external\Raylib\external\glfw\include ^
+:: NOTE: This only needs to run for the first compile and then 
+:: it can be commented out for future builds to dramatically increase compile times.
+:: cl %CompilerFlags% /c /D PLATFORM_DESKTOP /D DEBUG /I..\external\Raylib\external\glfw\include ^
     ..\external\raylib\rcore.c ^
     ..\external\raylib\rmodels.c ^
     ..\external\raylib\raudio.c ^

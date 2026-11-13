@@ -10,11 +10,19 @@ struct Window {
     S32 screen_height;
 };
 
-struct Game_State {
-    Window window;
-    RenderTexture2D canvas;
-    Texture2D com;
+struct Sprite {
+    Texture2D image;
+    Vector2   origin;
+    Vector2   position;
+    R32       scale;
 };
+
+struct Game_State {
+    Window          window;
+    RenderTexture2D canvas;
+    Sprite          com;
+};
+
 
 GLOBAL Game_State g_game_state;
 
@@ -32,7 +40,7 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_heigh
         (window_width  > 0) &&
         (window_height > 0)) {
 
-        R32 optimal_width   = ((R32)window_height * ((R32)canvas_width / (R32)canvas_height)); 
+        R32 optimal_width   = ((R32)window_height * ((R32)canvas_width  / (R32)canvas_height)); 
         R32 optimal_height  = ((R32)window_width  * ((R32)canvas_height / (R32)canvas_width));
 
         if (optimal_width > (R32)window_width) {
@@ -54,11 +62,20 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_heigh
 }
 
 INTERNAL void GameStateInit(Game_State *game_state) {
+    // Window Init
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
 
+    // Canvas Init
     game_state->canvas = LoadRenderTexture(CANVAS_WIDTH, CANVAS_HEIGHT);
     SetTextureFilter(game_state->canvas.texture, TEXTURE_FILTER_POINT);
-    game_state->com = LoadTexture("assets/sprites/com_1.png");
+
+    // Sprite Init
+    game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
+    game_state->com.scale    = 2.0f;
+    game_state->com.origin   = {game_state->com.image.width*game_state->com.scale*0.5f,
+                                game_state->com.image.height*game_state->com.scale*0.5f};
+    game_state->com.position = {0.5f*CANVAS_WIDTH   - game_state->com.origin.x, 
+                                0.5f*CANVAS_HEIGHT  - game_state->com.origin.y};
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
@@ -70,16 +87,12 @@ INTERNAL void GameUpdate(Game_State *game_state) {
 INTERNAL void GameRender(Game_State *game_state) {
     // Draw to texture
     BeginTextureMode(game_state->canvas);
-    if (IsTextureValid(game_state->com)) {
-        ClearBackground(RAYWHITE);
-    } else {
-        ClearBackground(RED);
-    } 
+    ClearBackground(RAYWHITE);
 
     R32 thickness = 50.0f;
     Rectangle border = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
-    DrawTexture(game_state->com, CANVAS_WIDTH*0.5f, CANVAS_HEIGHT*0.5f, WHITE);
+    DrawTextureEx(game_state->com.image, game_state->com.position, 0, game_state->com.scale, WHITE);
     EndTextureMode();
 
 
@@ -97,6 +110,8 @@ INTERNAL void GameRender(Game_State *game_state) {
 
 
 int main() {
+    B32 directory_changed = ChangeDirectory(GetApplicationDirectory());
+    ASSERT(!directory_changed);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(CANVAS_WIDTH, CANVAS_HEIGHT, "Eternal Jam");
     SetTargetFPS(60);
