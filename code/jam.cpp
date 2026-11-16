@@ -10,7 +10,7 @@ struct Window {
     S32 screen_height;
 };
 
-struct Sprite {
+struct Entity {
     Texture2D image;
     Vector2   origin;
     Vector2   position;
@@ -20,7 +20,7 @@ struct Sprite {
 struct Game_State {
     Window          window;
     RenderTexture2D canvas;
-    Sprite          com;
+    Entity          com;
 };
 
 
@@ -69,7 +69,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
     game_state->canvas = LoadRenderTexture(CANVAS_WIDTH, CANVAS_HEIGHT);
     SetTextureFilter(game_state->canvas.texture, TEXTURE_FILTER_POINT);
 
-    // Sprite Init
+    // entity Init
     game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
     game_state->com.scale    = 2.0f;
     game_state->com.origin   = {game_state->com.image.width*game_state->com.scale*0.5f,
