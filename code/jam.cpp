@@ -10,17 +10,33 @@ struct Window {
     S32 screen_height;
 };
 
+struct Button {
+    S32   width;
+    S32   height;
+    Color col;
+    Color pressed_col;
+};
+
+enum EntityType {
+    EntityNone,
+    EntityButton,
+    EntityTalker,
+};
+
 struct Entity {
-    Texture2D image;
-    Vector2   origin;
-    Vector2   position;
-    R32       scale;
+    Texture2D  image;
+    Vector2    origin;
+    Vector2    position;
+    R32        scale;
+    Button     button;
+    EntityType Type;
 };
 
 struct Game_State {
     Window          window;
     RenderTexture2D canvas;
     Entity          com;
+    Entity          button;
 };
 
 
@@ -76,6 +92,12 @@ INTERNAL void GameStateInit(Game_State *game_state) {
                                 game_state->com.image.height*game_state->com.scale*0.5f};
     game_state->com.position = {0.5f*CANVAS_WIDTH   - game_state->com.origin.x, 
                                 0.5f*CANVAS_HEIGHT  - game_state->com.origin.y};
+
+    game_state->button.position = {game_state->com.position.x, game_state->com.position.y - 10.0f};
+    game_state->button.button.width = 60;
+    game_state->button.button.height = 20;
+    game_state->button.button.col = GREEN;
+    game_state->button.button.pressed_col = BLUE;
 }
 
 INTERNAL void GameUpdate(Game_State *game_state) {
@@ -93,6 +115,11 @@ INTERNAL void GameRender(Game_State *game_state) {
     Rectangle border = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
     DrawTextureEx(game_state->com.image, game_state->com.position, 0, game_state->com.scale, WHITE);
+
+    Rectangle button = {game_state->button.position.x, game_state->button.position.y,
+                        (float)game_state->button.button.width, (float)game_state->button.button.height};
+    DrawRectangleRec(button, game_state->button.button.col);
+
     EndTextureMode();
 
 
