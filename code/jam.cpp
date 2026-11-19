@@ -31,14 +31,14 @@ struct Entity {
     Vector2    position;
     R32        scale;
     Clickable  button;
-    Vector2    mouse_pos;
-    Vector2    new_mouse_pos;
     EntityType Type;
 };
 
 struct Game_State {
     Window          window;
     RenderTexture2D canvas;
+    Vector2         mouse_pos;
+
     Entity          com;
     Entity          clickable;
 };
@@ -84,6 +84,9 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_heigh
 INTERNAL void GameStateInit(Game_State *game_state) {
     // Window Init
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
+    game_state->window.render_rect = AspectRatioFittedRectangle(CANVAS_WIDTH, CANVAS_HEIGHT,
+                                                                game_state->window.screen_width,
+                                                                game_state->window.screen_height);
 
     // Canvas Init
     game_state->canvas = LoadRenderTexture(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -112,16 +115,18 @@ INTERNAL void GameUpdate(Game_State *game_state) {
                                                                     game_state->window.screen_height);
     }
 
-    game_state->clickable.mouse_pos = GetMousePosition();
-    Vector2 mouse_position = game_state->clickable.mouse_pos;
+    game_state->mouse_pos = GetMousePosition();
+    Vector2 mouse_relative_to_canvas = {game_state->mouse_pos.x - game_state->window.render_rect.x,
+                                        game_state->mouse_pos.y - game_state->window.render_rect.y};
+    game_state->mouse_pos.x = mouse_relative_to_canvas.x * 
+                              (CANVAS_WIDTH  / game_state->window.render_rect.width);
+    game_state->mouse_pos.y = mouse_relative_to_canvas.y * 
+                              (CANVAS_HEIGHT / game_state->window.render_rect.height);
 
-    mouse_position.x = mouse_position.x / (CANVAS_WIDTH / game_state->window.screen_width);
-    mouse_position.y = mouse_position.y / (CANVAS_HEIGHT / game_state->window.screen_height);
-
-    if (mouse_position.x > game_state->clickable.position.x && 
-        mouse_position.x < (game_state->clickable.position.x + game_state->clickable.button.width) &&
-        mouse_position.y > game_state->clickable.position.y && 
-        mouse_position.y < (game_state->clickable.position.y + game_state->clickable.button.height)) {
+    if (game_state->mouse_pos.x > game_state->clickable.position.x && 
+        game_state->mouse_pos.x < (game_state->clickable.position.x + game_state->clickable.button.width) &&
+        game_state->mouse_pos.y > game_state->clickable.position.y && 
+        game_state->mouse_pos.y < (game_state->clickable.position.y + game_state->clickable.button.height)) {
         game_state->clickable.button.is_hovered = true;
     } else {
         game_state->clickable.button.is_hovered = false;
@@ -142,6 +147,7 @@ INTERNAL void GameRender(Game_State *game_state) {
                         (float)game_state->clickable.button.width, (float)game_state->clickable.button.height};
     Color col = game_state->clickable.button.is_hovered ? game_state->clickable.button.pressed_col : game_state->clickable.button.col;
     DrawRectangleRec(button, col);
+    DrawCircleV(game_state->mouse_pos, 4.0f, RED);
 
     EndTextureMode();
 
@@ -154,13 +160,8 @@ INTERNAL void GameRender(Game_State *game_state) {
 
     Vector2 mouse_pos = GetMousePosition();
 
-    float relative_mouse_x = mouse_pos.x - game_state->window.render_rect.x;
-    float relative_mouse_y = mouse_pos.y - game_state->window.render_rect.y;
-    Vector2 virtual_mouse = {relative_mouse_x * (CANVAS_WIDTH/game_state->window.render_rect.width),
-                             relative_mouse_y * (CANVAS_HEIGHT/game_state->window.render_rect.height)};
-    game_state->clickable.new_mouse_pos = virtual_mouse;
     DrawText(TextFormat("%f, %f", mouse_pos.x, mouse_pos.y), 100, 100, 20, BLACK);
-    DrawText(TextFormat("%f, %f", game_state->clickable.new_mouse_pos.x, game_state->clickable.new_mouse_pos.y), 200, 200, 20, GREEN);
+    DrawText(TextFormat("%f, %f", game_state->mouse_pos.x, game_state->mouse_pos.y), 200, 200, 20, GREEN);
 
     EndDrawing();
 }
