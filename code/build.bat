@@ -13,7 +13,7 @@ pushd build
 
 :: NOTE: This only needs to run for the first compile and then 
 :: it can be commented out for future builds to dramatically increase compile times.
-:: cl %CompilerFlags% /c /D PLATFORM_DESKTOP /D DEBUG /I..\external\Raylib\external\glfw\include ^
+::cl %CompilerFlags% /c /D PLATFORM_DESKTOP /D DEBUG /I..\external\Raylib\external\glfw\include ^
     ..\external\raylib\rcore.c ^
     ..\external\raylib\rmodels.c ^
     ..\external\raylib\raudio.c ^

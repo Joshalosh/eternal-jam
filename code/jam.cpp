@@ -123,12 +123,24 @@ INTERNAL void GameUpdate(Game_State *game_state) {
     game_state->mouse_pos.y = mouse_relative_to_canvas.y * 
                               (CANVAS_HEIGHT / game_state->window.render_rect.height);
 
+#if 0
     Vector2 mouse_pos = game_state->mouse_pos;
     Entity clickable = game_state->clickable;
-    clickable->button.is_hovered = (mouse_pos.x >= clickable.position.x && 
+    clickable.button.is_hovered = (mouse_pos.x >= clickable.position.x && 
                                     mouse_pos.x < clickable.position.x + clickable.button.width) &&
                                    (mouse_pos.y >= clickable.position.y &&
                                     mouse_pos.y < clickable.position.y + clickable.button.height);
+#else
+    if ((game_state->mouse_pos.x >= game_state->clickable.position.x) &&
+        (game_state->mouse_pos.x <  game_state->clickable.position.x + game_state->clickable.button.width) &&
+        (game_state->mouse_pos.y >= game_state->clickable.position.y) &&
+        (game_state->mouse_pos.y <  game_state->clickable.position.y + game_state->clickable.button.height)) {
+
+        game_state->clickable.button.is_hovered = true;
+    } else {
+        game_state->clickable.button.is_hovered = false;
+    }
+#endif
 }
 
 INTERNAL void GameRender(Game_State *game_state) {
