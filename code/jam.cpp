@@ -2,13 +2,17 @@
 #include "raylib.h"
 #include "staples.h"
 
-#define CANVAS_WIDTH  640
-#define CANVAS_HEIGHT 360
+#define BASE_WIDTH  640
+#define BASE_HEIGHT 360
 
 struct Window {
-    S32       screen_width;
-    S32       screen_height;
-    Rectangle render_rect;
+    S32  width;
+    S32  height;
+};
+
+struct Canvas {
+    RenderTexture2D render_tex;
+    Rectangle bounds;
 };
 
 struct Clickable {
@@ -35,8 +39,8 @@ struct Entity {
 };
 
 struct Game_State {
-    Window          window;
-    RenderTexture2D canvas;
+    Window_Display  window;
+    Canvas          canvas;
     Vector2         mouse_pos;
 
     Entity          com;
@@ -46,35 +50,55 @@ struct Game_State {
 
 GLOBAL Game_State g_game_state;
 
+#if 1
 INTERNAL void SetWindowDimensions(S32 *width, S32 *height) {
     *width  = GetScreenWidth();
     *height = GetScreenHeight();
 }
+#endif
 
-INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_height, 
+#if 0
+INTERNAL void SetWindowDimensions(Window *window) {
+    window->width  = GetScreenWidth();
+    window->height = GetScreenHeight();
+}
+#endif
+
+#if 0 
+INTERNAL Window SetWindowDimensions(S32 width, S32 height) {
+    ASSERT(width > 0 && height > 0);
+    Window result;
+    result.width  = GetScreenWidth();
+    result.height = GetScreenHeight();
+    return result;
+}
+#endif
+
+
+INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height, 
                                               S32 window_width, S32 window_height) {
     Rectangle result {};
 
-    if ((canvas_width  > 0) &&
-        (canvas_height > 0) &&
+    if ((base_width    > 0) &&
+        (base_height   > 0) &&
         (window_width  > 0) &&
         (window_height > 0)) {
 
-        R32 optimal_width   = ((R32)window_height * ((R32)canvas_width  / (R32)canvas_height)); 
-        R32 optimal_height  = ((R32)window_width  * ((R32)canvas_height / (R32)canvas_width));
+        R32 optimal_width   = ((R32)window_height * ((R32)base_width  / (R32)base_height)); 
+        R32 optimal_height  = ((R32)window_width  * ((R32)base_height / (R32)base_width));
 
         if (optimal_width > (R32)window_width) {
-            result.width  = (R32)window_width;
-            result.height = optimal_height;
-            result.x = 0;
+            result.width     = (R32)window_width;
+            result.height    = optimal_height;
             R32 empty_height = (R32)window_height - optimal_height;
-            result.y = empty_height*0.5f;
+            result.x         = 0;
+            result.y         = empty_height*0.5f;
         } else {
-            result.width  = (R32)optimal_width;
-            result.height = (R32)window_height;
+            result.width    = (R32)optimal_width;
+            result.height   = (R32)window_height;
             R32 empty_width = (R32)window_width - optimal_width;
-            result.x = empty_width*0.5f;
-            result.y = 0;
+            result.x        = empty_width*0.5f;
+            result.y        = 0;
         }
     }
 
@@ -84,21 +108,21 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 canvas_width, S32 canvas_heigh
 INTERNAL void GameStateInit(Game_State *game_state) {
     // Window Init
     SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
-    game_state->window.render_rect = AspectRatioFittedRectangle(CANVAS_WIDTH, CANVAS_HEIGHT,
-                                                                game_state->window.screen_width,
-                                                                game_state->window.screen_height);
 
     // Canvas Init
-    game_state->canvas = LoadRenderTexture(CANVAS_WIDTH, CANVAS_HEIGHT);
-    SetTextureFilter(game_state->canvas.texture, TEXTURE_FILTER_POINT);
+    game_state->canvas.render_tex = LoadRenderTexture(BASE_WIDTH, BASE_HEIGHT);
+    SetTextureFilter(game_state->canvas.render_tex.texture, TEXTURE_FILTER_POINT);
+    game_state->canvas.bounds = AspectRatioFittedRectangle(BASE_WIDTH, BASE_HEIGHT,
+                                                           game_state->window.screen_width,
+                                                           game_state->window.screen_height);
 
     // entity Init
     game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
     game_state->com.scale    = 2.0f;
     game_state->com.origin   = {game_state->com.image.width*game_state->com.scale*0.5f,
                                 game_state->com.image.height*game_state->com.scale*0.5f};
-    game_state->com.position = {0.5f*CANVAS_WIDTH   - game_state->com.origin.x, 
-                                0.5f*CANVAS_HEIGHT  - game_state->com.origin.y};
+    game_state->com.position = {0.5f*BASE_WIDTH  - game_state->com.origin.x, 
+                                0.5f*BASE_HEIGHT - game_state->com.origin.y};
 
     game_state->clickable.position = {game_state->com.position.x, game_state->com.position.y - 10.0f};
     game_state->clickable.button.width = 60;
@@ -110,14 +134,15 @@ INTERNAL void GameStateInit(Game_State *game_state) {
 INTERNAL void GameUpdate(Game_State *game_state) {
     if (IsWindowResized()) {
         SetWindowDimensions(&game_state->window.screen_width, &game_state->window.screen_height); 
-        game_state->window.render_rect = AspectRatioFittedRectangle(CANVAS_WIDTH, CANVAS_HEIGHT,
+        game_state->window.render_rect = AspectRatioFittedRectangle(BASE_WIDTH, BASE_HEIGHT,
                                                                     game_state->window.screen_width,
                                                                     game_state->window.screen_height);
     }
 
-    game_state->mouse_pos = GetMousePosition();
-    Vector2 mouse_relative_to_canvas = {game_state->mouse_pos.x - game_state->window.render_rect.x,
-                                        game_state->mouse_pos.y - game_state->window.render_rect.y};
+    Vector2 mouse_pos = GetMousePosition();
+    Rectangle canvas = game_state->window.render_rect;
+    Vector2 mouse_relative_to_canvas = {mouse_pos.x - canvas.x,
+                                        mouse_pos.y - canvas.y};
     game_state->mouse_pos.x = mouse_relative_to_canvas.x * 
                               (CANVAS_WIDTH  / game_state->window.render_rect.width);
     game_state->mouse_pos.y = mouse_relative_to_canvas.y * 
