@@ -107,14 +107,16 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height,
 
 INTERNAL void GameStateInit(Game_State *game_state) {
     // Window Init
-    game_state->window = SetWindowDimensions(GetScreenWidth(), GetScreenHeight()); 
+
+    S32 window_width   = GetScreenWidth();
+    S32 window_height  = GetScreenHeight();
+    game_state->window = SetWindowDimensions(window_width, window_height); 
 
     // Canvas Init
     game_state->canvas.render_tex = LoadRenderTexture(BASE_WIDTH, BASE_HEIGHT);
     SetTextureFilter(game_state->canvas.render_tex.texture, TEXTURE_FILTER_POINT);
     game_state->canvas.bounds = AspectRatioFittedRectangle(BASE_WIDTH, BASE_HEIGHT,
-                                                           game_state->window.width,
-                                                           game_state->window.height);
+                                                           window_width, window_height);
 
     // Entity Init
     game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
@@ -133,7 +135,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
 
 INTERNAL void GameUpdate(Game_State *game_state) {
     if (IsWindowResized()) {
-        S32 width = GetScreenWidth();
+        S32 width  = GetScreenWidth();
         S32 height = GetScreenHeight();
         if (width > 0 && height > 0){
             game_state->window = SetWindowDimensions(width, height); 
