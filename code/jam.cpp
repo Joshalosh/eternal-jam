@@ -94,11 +94,11 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height,
             result.x         = 0;
             result.y         = empty_height*0.5f;
         } else {
-            result.width    = (R32)optimal_width;
-            result.height   = (R32)window_height;
-            R32 empty_width = (R32)window_width - optimal_width;
-            result.x        = empty_width*0.5f;
-            result.y        = 0;
+            result.width     = (R32)optimal_width;
+            result.height    = (R32)window_height;
+            R32 empty_width  = (R32)window_width - optimal_width;
+            result.x         = empty_width*0.5f;
+            result.y         = 0;
         }
     }
 
@@ -160,6 +160,20 @@ INTERNAL void GameUpdate(Game_State *game_state) {
     B32 hover_check = (mouse_pos.x >= button_min.x && mouse_pos.x < button_max.x) &&
                       (mouse_pos.y >= button_min.y && mouse_pos.y < button_max.y);
     game_state->clickable.button.is_hovered = hover_check;
+
+    Color button_col = BLUE;
+    S32 mouse_left = 0;
+    S32 x_offset = 0;
+    S32 y_offset = 0;
+    if (hover_check && IsMouseButtonDown(mouse_left)) {
+        button_col = RED;
+        x_offset = GetRandomValue(-5, 5);
+        y_offset = GetRandomValue(-5, 5);
+        Vector2 pos_offset = {x_offset, y_offset};
+    }
+    game_state->clickable.button.pressed_col = button_col;
+    game_state->com.position.x += (R32)x_offset;
+    game_state->com.position.y += (R32)y_offset;
 }
 
 INTERNAL void GameRender(Game_State *game_state) {
@@ -186,10 +200,6 @@ INTERNAL void GameRender(Game_State *game_state) {
     ClearBackground(BLACK);
     Rectangle source_rect = {0, 0, (R32)BASE_WIDTH, -(R32)BASE_HEIGHT};
     DrawTexturePro(game_state->canvas.render_tex.texture, source_rect, game_state->canvas.bounds, Vector2{0, 0}, 0, WHITE);
-
-    Vector2 mouse_pos = GetMousePosition();
-    DrawText(TextFormat("%f, %f", mouse_pos.x, mouse_pos.y), 100, 100, 20, BLACK);
-    DrawText(TextFormat("%f, %f", game_state->mouse_pos.x, game_state->mouse_pos.y), 200, 200, 20, GREEN);
 
     EndDrawing();
 }
