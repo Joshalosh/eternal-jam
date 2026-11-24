@@ -1,6 +1,7 @@
 
 #include "raylib.h"
 #include "staples.h"
+#include "raymath.h"
 
 #define BASE_WIDTH  640
 #define BASE_HEIGHT 360
@@ -33,6 +34,7 @@ struct Entity {
     Texture2D  image;
     Vector2    origin;
     Vector2    position;
+    Vector2    visual_offset;
     R32        scale;
     Clickable  button;
     EntityType Type;
@@ -125,6 +127,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
                                 game_state->com.image.height*game_state->com.scale*0.5f};
     game_state->com.position = {0.5f*BASE_WIDTH  - game_state->com.origin.x, 
                                 0.5f*BASE_HEIGHT - game_state->com.origin.y};
+    game_state->com.visual_offset = {0,0};
 
     game_state->clickable.position           = {game_state->com.position.x, game_state->com.position.y - 10.0f};
     game_state->clickable.button.width       = 60;
@@ -163,17 +166,15 @@ INTERNAL void GameUpdate(Game_State *game_state) {
 
     Color button_col = BLUE;
     S32 mouse_left = 0;
-    S32 x_offset = 0;
-    S32 y_offset = 0;
+    Vector2 shake_offset = {};
     if (hover_check && IsMouseButtonDown(mouse_left)) {
         button_col = RED;
-        x_offset = GetRandomValue(-5, 5);
-        y_offset = GetRandomValue(-5, 5);
-        Vector2 pos_offset = {x_offset, y_offset};
+        R32 x_offset = (R32)GetRandomValue(-5, 5);
+        R32 y_offset = (R32)GetRandomValue(-5, 5);
+        shake_offset = {x_offset, y_offset};
     }
+    game_state->com.visual_offset = shake_offset;
     game_state->clickable.button.pressed_col = button_col;
-    game_state->com.position.x += (R32)x_offset;
-    game_state->com.position.y += (R32)y_offset;
 }
 
 INTERNAL void GameRender(Game_State *game_state) {
@@ -184,7 +185,8 @@ INTERNAL void GameRender(Game_State *game_state) {
     R32 thickness = 50.0f;
     Rectangle border = {0, 0, BASE_WIDTH, BASE_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
-    DrawTextureEx(game_state->com.image, game_state->com.position, 0, game_state->com.scale, WHITE);
+    Vector2 com_draw_pos = Vector2Add(game_state->com.position, game_state->com.visual_offset);
+    DrawTextureEx(game_state->com.image, com_draw_pos, 0, game_state->com.scale, WHITE);
 
     Rectangle button = {game_state->clickable.position.x, game_state->clickable.position.y,
                         (float)game_state->clickable.button.width, (float)game_state->clickable.button.height};
