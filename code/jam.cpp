@@ -205,8 +205,12 @@ INTERNAL void GameRender(Game_State *game_state) {
     Vector2 com_draw_pos = game_state->com.position;
     if (game_state->com.is_shaking) {
         R32 t = (R32)game_state->world_time;
-        com_draw_pos.x += sinf(t*73.0f)*4.0f;
-        com_draw_pos.y += sinf(t*59.0f)*4.0f;
+        R32 x_speed   = 73.0f;
+        R32 y_speed   = 59.0f;
+        R32 amplitude = 4.0f;
+
+        com_draw_pos.x += sinf(t*x_speed)*amplitude;
+        com_draw_pos.y += sinf(t*y_speed)*amplitude;
     }
 #else
     Vector2 com_draw_pos = Vector2Add(game_state->com.position, game_state->com.visual_offset);
