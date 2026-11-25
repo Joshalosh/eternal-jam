@@ -38,12 +38,14 @@ struct Entity {
     R32        scale;
     Clickable  button;
     EntityType Type;
+    B32        is_shaking;
 };
 
 struct Game_State {
     Window  window;
     Canvas  canvas;
     Vector2 mouse_pos;
+    R64     world_time;
 
     Entity  com;
     Entity  clickable;
@@ -108,8 +110,9 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height,
 }
 
 INTERNAL void GameStateInit(Game_State *game_state) {
-    // Window Init
+    game_state->world_time = 0;
 
+    // Window Init
     S32 window_width   = GetScreenWidth();
     S32 window_height  = GetScreenHeight();
     game_state->window = SetWindowDimensions(window_width, window_height); 
@@ -136,7 +139,8 @@ INTERNAL void GameStateInit(Game_State *game_state) {
     game_state->clickable.button.pressed_col = BLUE;
 }
 
-INTERNAL void GameUpdate(Game_State *game_state) {
+INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
+    game_state->world_time += (R64)delta_time;
     if (IsWindowResized()) {
         S32 width  = GetScreenWidth();
         S32 height = GetScreenHeight();
@@ -164,6 +168,7 @@ INTERNAL void GameUpdate(Game_State *game_state) {
                       (mouse_pos.y >= button_min.y && mouse_pos.y < button_max.y);
     game_state->clickable.button.is_hovered = hover_check;
 
+#if 0
     Color button_col = BLUE;
     S32 mouse_left = 0;
     Vector2 shake_offset = {};
@@ -174,6 +179,15 @@ INTERNAL void GameUpdate(Game_State *game_state) {
         shake_offset = {x_offset, y_offset};
     }
     game_state->com.visual_offset = shake_offset;
+#endif
+    Color button_col = BLUE;
+    S32 mouse_left = 0;
+    B32 is_com_shaking = false;
+    if (hover_check && IsMouseButtonDown(mouse_left)) {
+        button_col = RED;
+        is_com_shaking = true;
+    }
+    game_state->com.is_shaking = is_com_shaking;
     game_state->clickable.button.pressed_col = button_col;
 }
 
@@ -185,7 +199,18 @@ INTERNAL void GameRender(Game_State *game_state) {
     R32 thickness = 50.0f;
     Rectangle border = {0, 0, BASE_WIDTH, BASE_HEIGHT};
     DrawRectangleLinesEx(border, thickness, BROWN);
+
+
+#if 1
+    Vector2 com_draw_pos = game_state->com.position;
+    if (game_state->com.is_shaking) {
+        R32 t = (R32)game_state->world_time;
+        com_draw_pos.x += sinf(t*73.0f)*4.0f;
+        com_draw_pos.y += sinf(t*59.0f)*4.0f;
+    }
+#else
     Vector2 com_draw_pos = Vector2Add(game_state->com.position, game_state->com.visual_offset);
+#endif
     DrawTextureEx(game_state->com.image, com_draw_pos, 0, game_state->com.scale, WHITE);
 
     Rectangle button = {game_state->clickable.position.x, game_state->clickable.position.y,
@@ -217,7 +242,11 @@ int main() {
     GameStateInit(&g_game_state);
 
     while(!WindowShouldClose()) {
-        GameUpdate(&g_game_state);
+        R32 delta_time = GetFrameTime();
+        if (delta_time > 0.05f) {
+            delta_time = 0.05f;
+        }
+        GameUpdate(&g_game_state, delta_time);
         GameRender(&g_game_state);
     }
 
