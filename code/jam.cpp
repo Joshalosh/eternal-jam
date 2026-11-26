@@ -129,7 +129,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
 
     Vector2 origin                           = {width*0.5f, height*0.5f}; 
     game_state->clickable.origin             = origin;
-    R32 third_of_base_width = (R32)BASE_WIDTH * (1.0f/3.0f);
+    R32 third_of_base_width                  = (R32)BASE_WIDTH * (1.0f/3.0f);
     game_state->clickable.position           = {0.5f*(third_of_base_width + thickness) - origin.x, (BASE_HEIGHT * (2.0f/3.0f)) - origin.y};
     game_state->clickable.button.col         = GREEN;
     game_state->clickable.button.pressed_col = BLUE;
