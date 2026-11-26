@@ -54,21 +54,6 @@ struct Game_State {
 
 GLOBAL Game_State g_game_state;
 
-#if 0
-INTERNAL void SetWindowDimensions(S32 *width, S32 *height) {
-    *width  = GetScreenWidth();
-    *height = GetScreenHeight();
-}
-#endif
-
-#if 0
-INTERNAL void SetWindowDimensions(Window *window) {
-    window->width  = GetScreenWidth();
-    window->height = GetScreenHeight();
-}
-#endif
-
-#if 1 
 INTERNAL Window SetWindowDimensions(S32 width, S32 height) {
     ASSERT(width > 0 && height > 0);
     Window result;
@@ -76,8 +61,6 @@ INTERNAL Window SetWindowDimensions(S32 width, S32 height) {
     result.height = height;
     return result;
 }
-#endif
-
 
 INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height, 
                                               S32 window_width, S32 window_height) {
@@ -110,7 +93,7 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height,
 }
 
 INTERNAL void GameStateInit(Game_State *game_state) {
-    game_state->world_time = 0;
+    game_state->world_time = 100;
 
     // Window Init
     S32 window_width   = GetScreenWidth();
@@ -145,7 +128,7 @@ INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
         S32 width  = GetScreenWidth();
         S32 height = GetScreenHeight();
         if (width > 0 && height > 0){
-            game_state->window = SetWindowDimensions(width, height); 
+            game_state->window        = SetWindowDimensions(width, height); 
             game_state->canvas.bounds = AspectRatioFittedRectangle(BASE_WIDTH, BASE_HEIGHT,
                                                                    game_state->window.width,
                                                                    game_state->window.height);
@@ -168,18 +151,6 @@ INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
                       (mouse_pos.y >= button_min.y && mouse_pos.y < button_max.y);
     game_state->clickable.button.is_hovered = hover_check;
 
-#if 0
-    Color button_col = BLUE;
-    S32 mouse_left = 0;
-    Vector2 shake_offset = {};
-    if (hover_check && IsMouseButtonDown(mouse_left)) {
-        button_col = RED;
-        R32 x_offset = (R32)GetRandomValue(-5, 5);
-        R32 y_offset = (R32)GetRandomValue(-5, 5);
-        shake_offset = {x_offset, y_offset};
-    }
-    game_state->com.visual_offset = shake_offset;
-#endif
     Color button_col = BLUE;
     S32 mouse_left = 0;
     B32 is_com_shaking = false;
@@ -187,7 +158,7 @@ INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
         button_col = RED;
         is_com_shaking = true;
     }
-    game_state->com.is_shaking = is_com_shaking;
+    game_state->com.is_shaking               = is_com_shaking;
     game_state->clickable.button.pressed_col = button_col;
 }
 
@@ -196,12 +167,13 @@ INTERNAL void GameRender(Game_State *game_state) {
     BeginTextureMode(game_state->canvas.render_tex);
     ClearBackground(RAYWHITE);
 
-    R32 thickness = 50.0f;
-    Rectangle border = {0, 0, BASE_WIDTH, BASE_HEIGHT};
-    DrawRectangleLinesEx(border, thickness, BROWN);
+    R32 thickness = 25.0f;
+    R32 a_third = 1.0f / 3.0f;
+    Rectangle right_border = {BASE_WIDTH*a_third - thickness, 0, BASE_WIDTH * (1.0f - a_third) + thickness, BASE_HEIGHT};
+    Rectangle left_border = {0, 0, BASE_WIDTH*a_third, BASE_HEIGHT};
+    DrawRectangleLinesEx(right_border, thickness, BROWN);
+    DrawRectangleLinesEx(left_border, thickness, BROWN);
 
-
-#if 1
     Vector2 com_draw_pos = game_state->com.position;
     if (game_state->com.is_shaking) {
         R32 t = (R32)game_state->world_time;
@@ -212,9 +184,7 @@ INTERNAL void GameRender(Game_State *game_state) {
         com_draw_pos.x += sinf(t*x_speed)*amplitude;
         com_draw_pos.y += sinf(t*y_speed)*amplitude;
     }
-#else
-    Vector2 com_draw_pos = Vector2Add(game_state->com.position, game_state->com.visual_offset);
-#endif
+
     DrawTextureEx(game_state->com.image, com_draw_pos, 0, game_state->com.scale, WHITE);
 
     Rectangle button = {game_state->clickable.position.x, game_state->clickable.position.y,
@@ -224,7 +194,6 @@ INTERNAL void GameRender(Game_State *game_state) {
     DrawCircleV(game_state->mouse_pos, 4.0f, RED);
 
     EndTextureMode();
-
 
     // Draw texture to screen
     BeginDrawing();
