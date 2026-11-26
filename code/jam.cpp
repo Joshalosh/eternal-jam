@@ -19,6 +19,9 @@ struct Canvas {
 struct Clickable {
     S32   width;
     S32   height;
+    R32   thickness; // TODO: Need to remove thickness from button because the thickness
+                     // is actually the thickness of the border which is a pretty fucking stupid
+                     // member to track on this button.
     Color col;
     Color pressed_col;
     B32   is_hovered;
@@ -115,11 +118,22 @@ INTERNAL void GameStateInit(Game_State *game_state) {
                                 0.5f*BASE_HEIGHT - game_state->com.origin.y};
     game_state->com.visual_offset = {0,0};
 
-    game_state->clickable.position           = {game_state->com.position.x, game_state->com.position.y - 10.0f};
-    game_state->clickable.button.width       = 60;
-    game_state->clickable.button.height      = 20;
+    // Button Init
+    {
+    S32 width     = 64;
+    S32 height    = 16;
+    R32 thickness = 25.0f;
+    game_state->clickable.button.width       = width;
+    game_state->clickable.button.height      = height;
+    game_state->clickable.button.thickness   = thickness;
+
+    Vector2 origin                           = {width*0.5f, height*0.5f}; 
+    game_state->clickable.origin             = origin;
+    R32 third_of_base_width = (R32)BASE_WIDTH * (1.0f/3.0f);
+    game_state->clickable.position           = {0.5f*(third_of_base_width + thickness) - origin.x, (BASE_HEIGHT * (2.0f/3.0f)) - origin.y};
     game_state->clickable.button.col         = GREEN;
     game_state->clickable.button.pressed_col = BLUE;
+    }
 }
 
 INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
@@ -167,12 +181,12 @@ INTERNAL void GameRender(Game_State *game_state) {
     BeginTextureMode(game_state->canvas.render_tex);
     ClearBackground(RAYWHITE);
 
-    R32 thickness = 25.0f;
+    R32 thickness = game_state->clickable.button.thickness;
     R32 a_third = 1.0f / 3.0f;
-    Rectangle right_border = {BASE_WIDTH*a_third - thickness, 0, BASE_WIDTH * (1.0f - a_third) + thickness, BASE_HEIGHT};
-    Rectangle left_border = {0, 0, BASE_WIDTH*a_third, BASE_HEIGHT};
-    DrawRectangleLinesEx(right_border, thickness, BROWN);
-    DrawRectangleLinesEx(left_border, thickness, BROWN);
+    Rectangle vertical_bar = {BASE_WIDTH*a_third, 0, thickness, BASE_HEIGHT};
+    Rectangle border = {0, 0, BASE_WIDTH, BASE_HEIGHT};
+    DrawRectangleLinesEx(vertical_bar, thickness, BROWN);
+    DrawRectangleLinesEx(border, thickness, BROWN);
 
     Vector2 com_draw_pos = game_state->com.position;
     if (game_state->com.is_shaking) {
@@ -187,10 +201,13 @@ INTERNAL void GameRender(Game_State *game_state) {
 
     DrawTextureEx(game_state->com.image, com_draw_pos, 0, game_state->com.scale, WHITE);
 
-    Rectangle button = {game_state->clickable.position.x, game_state->clickable.position.y,
+    Vector2 button_draw_pos  = game_state->clickable.position;
+    Rectangle button = {button_draw_pos.x, button_draw_pos.y,
                         (float)game_state->clickable.button.width, (float)game_state->clickable.button.height};
     Color col = game_state->clickable.button.is_hovered ? game_state->clickable.button.pressed_col : game_state->clickable.button.col;
     DrawRectangleRec(button, col);
+    Vector2 button_origin = {button_draw_pos.x + game_state->clickable.origin.x, button_draw_pos.y + game_state->clickable.origin.y};
+    DrawCircleV(button_origin, 2.0f, RED);
     DrawCircleV(game_state->mouse_pos, 4.0f, RED);
 
     EndTextureMode();
