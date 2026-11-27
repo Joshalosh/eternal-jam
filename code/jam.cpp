@@ -6,6 +6,7 @@
 #define BASE_WIDTH       640
 #define BASE_HEIGHT      360
 #define BORDER_THICKNESS 25.0f
+#define CANVAS_SPLIT     (R32)BASE_WIDTH * (1.0f/3.0f)
 
 struct Window {
     S32  width;
@@ -108,7 +109,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
     // Entity Init
     game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
     game_state->com.scale    = 2.0f;
-    game_state->com.position = {0.5f*BASE_WIDTH, 0.5f*BASE_HEIGHT};
+    game_state->com.position = {0.5f*(CANVAS_SPLIT + BORDER_THICKNESS), 0.33333f*BASE_HEIGHT};
 
     // Button Init
     {
@@ -117,8 +118,7 @@ INTERNAL void GameStateInit(Game_State *game_state) {
     game_state->clickable.button.width       = width;
     game_state->clickable.button.height      = height;
 
-    R32 third_of_base_width                  = (R32)BASE_WIDTH * (1.0f/3.0f);
-    game_state->clickable.position           = {0.5f * third_of_base_width, (BASE_HEIGHT * (2.0f/3.0f))};
+    game_state->clickable.position           = {0.5f*(CANVAS_SPLIT + BORDER_THICKNESS), (BASE_HEIGHT * (2.0f/3.0f))};
     game_state->clickable.button.col         = GREEN;
     game_state->clickable.button.pressed_col = BLUE;
     }
