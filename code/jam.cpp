@@ -48,6 +48,7 @@ struct Game_State {
     R64     world_time;
 
     Entity  com;
+    Entity  jar;
     Entity  clickable;
 };
 
@@ -110,6 +111,12 @@ INTERNAL void GameStateInit(Game_State *game_state) {
     game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
     game_state->com.scale    = 2.0f;
     game_state->com.position = {0.5f*(CANVAS_SPLIT + BORDER_THICKNESS), 0.33333f*BASE_HEIGHT};
+
+    game_state->jar.image    = LoadTexture("../assets/sprites/jar.png");
+    game_state->jar.scale    = 2.0f;
+    R32 half_right_panel_width = ((R32)BASE_WIDTH - (R32)CANVAS_SPLIT) * 0.5f;
+    game_state->jar.position = {CANVAS_SPLIT + half_right_panel_width, 0.5f*BASE_HEIGHT};
+    //game_state->jar.position = {0.5f*BASE_WIDTH, 0.5f*BASE_HEIGHT};
 
     // Button Init
     {
@@ -197,8 +204,11 @@ INTERNAL void GameRender(Game_State *game_state) {
         com_draw_pos.x += sinf(t*x_speed)*amplitude;
         com_draw_pos.y += sinf(t*y_speed)*amplitude;
     }
-
     DrawCentredTexture(game_state->com.image, com_draw_pos, game_state->com.scale, WHITE);
+
+    Vector2 jar_draw_pos = game_state->jar.position;
+    DrawCentredTexture(game_state->jar.image, jar_draw_pos, game_state->jar.scale, WHITE);
+    DrawCircleV(jar_draw_pos, 2.0f, RED);
 
     Vector2 button_draw_pos  = game_state->clickable.position;
     Rectangle button = {button_draw_pos.x, button_draw_pos.y,
