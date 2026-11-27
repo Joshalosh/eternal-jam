@@ -155,7 +155,7 @@ INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
     // Button check
     R32 button_width  = (R32)game_state->clickable.button.width;
     R32 button_height = (R32)game_state->clickable.button.height;
-    Vector2 button_min = {game_state->clickable.position.x - (button_width*0.5f), game_state->clickable.position.y - (button_width*0.5f)};
+    Vector2 button_min = {game_state->clickable.position.x - (button_width*0.5f), game_state->clickable.position.y - (button_height*0.5f)};
     Vector2 button_max = {button_min.x + button_width, button_min.y + button_height};
     B32 hover_check = (mouse_pos.x >= button_min.x && mouse_pos.x < button_max.x) &&
                       (mouse_pos.y >= button_min.y && mouse_pos.y < button_max.y);
