@@ -163,12 +163,12 @@ INTERNAL void GameUpdate(Game_State *game_state, R32 delta_time) {
 
     Color button_col = BLUE;
     S32 mouse_left = 0;
-    B32 is_com_shaking = false;
+    B32 is_shaking = false;
     if (hover_check && IsMouseButtonDown(mouse_left)) {
         button_col = RED;
-        is_com_shaking = true;
+        is_shaking = true;
     }
-    game_state->com.is_shaking               = is_com_shaking;
+    game_state->jar.is_shaking               = is_shaking;
     game_state->clickable.button.pressed_col = button_col;
 }
 
@@ -196,18 +196,18 @@ INTERNAL void GameRender(Game_State *game_state) {
     DrawRectangleLinesEx(border, BORDER_THICKNESS, BROWN);
 
     Vector2 com_draw_pos = game_state->com.position;
-    if (game_state->com.is_shaking) {
+    DrawCentredTexture(game_state->com.image, com_draw_pos, game_state->com.scale, WHITE);
+
+    Vector2 jar_draw_pos = game_state->jar.position;
+    if (game_state->jar.is_shaking) {
         R32 t = (R32)game_state->world_time;
         R32 x_speed   = 73.0f;
         R32 y_speed   = 59.0f;
         R32 amplitude = 4.0f;
 
-        com_draw_pos.x += sinf(t*x_speed)*amplitude;
-        com_draw_pos.y += sinf(t*y_speed)*amplitude;
+        jar_draw_pos.x += sinf(t*x_speed)*amplitude;
+        jar_draw_pos.y += sinf(t*y_speed)*amplitude;
     }
-    DrawCentredTexture(game_state->com.image, com_draw_pos, game_state->com.scale, WHITE);
-
-    Vector2 jar_draw_pos = game_state->jar.position;
     DrawCentredTexture(game_state->jar.image, jar_draw_pos, game_state->jar.scale, WHITE);
     DrawCircleV(jar_draw_pos, 2.0f, RED);
 
