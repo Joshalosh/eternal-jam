@@ -208,6 +208,7 @@ INTERNAL void GameRender(Game_State *game_state) {
         jar_draw_pos.x += sinf(t*x_speed)*amplitude;
         jar_draw_pos.y += sinf(t*y_speed)*amplitude;
     }
+
     DrawCentredTexture(game_state->jar.image, jar_draw_pos, game_state->jar.scale, WHITE);
     DrawCircleV(jar_draw_pos, 2.0f, RED);
 
