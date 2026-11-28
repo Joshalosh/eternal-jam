@@ -210,6 +210,7 @@ INTERNAL void GameRender(Game_State *game_state) {
 #if 0
     DrawCentredTexture(game_state->com.image, com_draw_pos, game_state->com.scale, WHITE);
 #else
+    // TODO: Make it so that DrawCentred texture draws with a rect for every texture.
     DrawTextureRec(game_state->com.image, game_state->com.frame_rect, com_draw_pos, WHITE);
 #endif
 
