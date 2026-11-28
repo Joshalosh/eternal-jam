@@ -35,6 +35,8 @@ enum EntityType {
 struct Entity {
     Texture2D  image;
     Vector2    position;
+    Rectangle  frame_rect;
+    S32        frame_count;
     R32        scale;
     Clickable  button;
     EntityType Type;
@@ -93,6 +95,13 @@ INTERNAL Rectangle AspectRatioFittedRectangle(S32 base_width, S32 base_height,
     return result;
 }
 
+// TODO: Fix this up to make it not be so scuffed
+INTERNAL void Animate(Entity *entity) {
+    S32 frame_width = entity->image.width / entity->frame_count;
+    S32 frame_height = entity->image.height;
+    entity->frame_rect = {0.0f, 0.0f, (R32)frame_width, (R32)frame_height};
+}
+
 INTERNAL void GameStateInit(Game_State *game_state) {
     game_state->world_time = 100;
 
@@ -108,9 +117,11 @@ INTERNAL void GameStateInit(Game_State *game_state) {
                                                            window_width, window_height);
 
     // Entity Init
-    game_state->com.image    = LoadTexture("../assets/sprites/com_1.png");
+    game_state->com.image    = LoadTexture("../assets/sprites/com.png");
     game_state->com.scale    = 2.0f;
     game_state->com.position = {0.5f*(CANVAS_SPLIT + BORDER_THICKNESS), 0.33333f*BASE_HEIGHT};
+    game_state->com.frame_count = 2;
+    Animate(&game_state->com);
 
     game_state->jar.image    = LoadTexture("../assets/sprites/jar.png");
     game_state->jar.scale    = 2.0f;
@@ -196,7 +207,11 @@ INTERNAL void GameRender(Game_State *game_state) {
     DrawRectangleLinesEx(border, BORDER_THICKNESS, BROWN);
 
     Vector2 com_draw_pos = game_state->com.position;
+#if 0
     DrawCentredTexture(game_state->com.image, com_draw_pos, game_state->com.scale, WHITE);
+#else
+    DrawTextureRec(game_state->com.image, game_state->com.frame_rect, com_draw_pos, WHITE);
+#endif
 
     Vector2 jar_draw_pos = game_state->jar.position;
     if (game_state->jar.is_shaking) {
